@@ -17,8 +17,6 @@ try {
   process.exit(1);
 }
 
-// Nuevo ErrorListener que acumula errores en vez de ejecutar process.exit()
-// para permitir hacer una verificación antes de continuar.
 class MyErrorListener extends antlr4.error.ErrorListener {
   constructor(inputText) {
     super();
@@ -26,22 +24,19 @@ class MyErrorListener extends antlr4.error.ErrorListener {
       throw new Error("El parámetro inputText es inválido. Verifica que el archivo input.txt se esté leyendo correctamente.");
     }
     this.inputLines = inputText.split("\n");
-    this.errors = []; // Acumula los errores encontrados
+    this.errors = [];
   }
 
   syntaxError(recognizer, offendingSymbol, line, column, msg, e) {
     const errorMsg = `❌ ERROR en línea ${line}, columna ${column} -> ${msg}`;
     const codeLine = this.inputLines[line - 1] || "No disponible";
     const marker = " ".repeat(column) + "^";
-    // Guarda el error en el arreglo
     this.errors.push({ line, column, msg, codeLine, marker });
   }
 }
 
-// Instanciar el error listener con el contenido de input.txt
 const errorListener = new MyErrorListener(input);
 
-// Configurar el Lexer con el listener (para errores léxicos)
 const inputStream = new antlr4.InputStream(input);
 const lexer = new gramaticaLexer(inputStream);
 lexer.removeErrorListeners();
@@ -50,14 +45,11 @@ lexer.addErrorListener(errorListener);
 // Crear el token stream a partir del lexer
 const tokens = new antlr4.CommonTokenStream(lexer);
 
-// Configurar el Parser con el listener (para errores sintácticos)
-// Se ha removido BailErrorStrategy para que se acumulen los errores y podamos detectar
-// en forma condicional si hubo algún fallo.
+// Configurar el Parser con el listener 
 const parser = new gramaticaParser(tokens);
 parser.removeErrorListeners();
 parser.addErrorListener(errorListener);
 
-// 2. Realizar el análisis sintáctico (utilizando la regla inicial 'programa')
 let tree = parser.programa();
 
 // Verificar, antes de continuar, si se capturaron errores en lexing o parsing
@@ -76,7 +68,7 @@ console.log("Análisis léxico y sintáctico completado: ENTRADA CORRECTA.");
 // 2. Generación de la tabla de tokens y lexemas (Formato ASCII)
 console.log("\n*** Tabla de Tokens y Lexemas (Formato ASCII) ***");
 
-// Creamos un nuevo InputStream y Lexer para generar la tabla (asociamos el listener también)
+// Creamos un nuevo InputStream y Lexer para generar la tabla
 const inputStreamForTable = new antlr4.InputStream(input);
 const lexerForTable = new gramaticaLexer(inputStreamForTable);
 lexerForTable.removeErrorListeners();
@@ -110,7 +102,7 @@ if (tokensList.length === 0) {
     });
   });
 
-  // Función para imprimir la tabla en formato ASCII
+  // Función para imprimir la tabla
   function printAsciiTable(data, headers) {
     const colWidths = headers.map(header => {
       const contentWidths = data.map(row => (row[header] ? row[header].toString().length : 0));
