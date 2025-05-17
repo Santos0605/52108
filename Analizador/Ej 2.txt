@@ -1,0 +1,3 @@
+for ( j = 5 ; j <= 15 ; j++ ) { 
+printf("Mensaje valido"); 
+printf("Segunda salida");}
